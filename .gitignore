@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints
+venv/
+.venv/
+env/
+
+# Large binaries and local models (Crucial to prevent GitHub file size errors)
+local_models/
+llama_bin/
+
+# Environment configurations and API keys
+.env
+.streamlit/
+secrets.toml
