@@ -43,16 +43,16 @@ class NumberedCanvas(canvas.Canvas):
             
         # Draw Header
         self.setFont("Helvetica-Bold", 8)
-        self.setFillColor(colors.HexColor("#1A202C"))
-        self.drawString(54, 750, "TECHNICAL SPECIFICATION REPORT: HYBRID AI ASSISTANT")
-        self.setStrokeColor(colors.HexColor("#1A202C"))
-        self.setLineWidth(0.75)
+        self.setFillColor(colors.HexColor("#4A5568"))
+        self.drawString(54, 750, "PROJECT REPORT: HYBRID AI RESEARCH ASSISTANT")
+        self.setStrokeColor(colors.HexColor("#CBD5E0"))
+        self.setLineWidth(0.5)
         self.line(54, 742, 558, 742)
         
         # Draw Footer
         self.line(54, 55, 558, 55)
         self.setFont("Helvetica", 8)
-        self.drawString(54, 42, "Project Documentation - System Engineering")
+        self.drawString(54, 42, "Confidential - Academic & Professional Portfolio")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(558, 42, page_str)
         self.restoreState()
@@ -70,22 +70,22 @@ def create_report():
     
     styles = getSampleStyleSheet()
     
-    # Minimalist Professional Black & White Palette
-    primary_color = colors.HexColor("#000000")   # Pure Black
-    secondary_color = colors.HexColor("#1A202C") # Dark charcoal
-    dark_neutral = colors.HexColor("#2D3748")    # Grey-Black body text
-    light_bg = colors.HexColor("#F7FAFC")        # Soft grey block background
-    border_color = colors.HexColor("#1A202C")    # Sharp black borders
+    # Custom Palette
+    primary_color = colors.HexColor("#1A365D")   # Deep navy blue
+    secondary_color = colors.HexColor("#2B6CB0") # Medium blue
+    dark_neutral = colors.HexColor("#2D3748")    # Charcoal
+    light_bg = colors.HexColor("#F7FAFC")        # Soft grey
+    border_color = colors.HexColor("#E2E8F0")    # Divider grey
     
     # Custom Paragraph Styles
     title_style = ParagraphStyle(
         'CoverTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=28,
-        leading=34,
+        fontSize=32,
+        leading=38,
         textColor=primary_color,
-        alignment=0,
+        alignment=0, # Left aligned
         spaceAfter=15
     )
     
@@ -93,9 +93,9 @@ def create_report():
         'CoverSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=12,
-        leading=16,
-        textColor=dark_neutral,
+        fontSize=15,
+        leading=20,
+        textColor=secondary_color,
         spaceAfter=30
     )
     
@@ -103,8 +103,8 @@ def create_report():
         'Heading1_Custom',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=15,
-        leading=18,
+        fontSize=18,
+        leading=22,
         textColor=primary_color,
         spaceBefore=18,
         spaceAfter=8,
@@ -115,10 +115,10 @@ def create_report():
         'Heading2_Custom',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=14,
+        fontSize=12,
+        leading=16,
         textColor=secondary_color,
-        spaceBefore=12,
+        spaceBefore=10,
         spaceAfter=6,
         keepWithNext=True
     )
@@ -127,8 +127,8 @@ def create_report():
         'Body_Custom',
         parent=styles['BodyText'],
         fontName='Helvetica',
-        fontSize=9.5,
-        leading=13.5,
+        fontSize=10,
+        leading=14,
         textColor=dark_neutral,
         spaceAfter=8
     )
@@ -147,187 +147,134 @@ def create_report():
         fontName='Helvetica',
         fontSize=9,
         leading=12,
-        textColor=colors.HexColor("#4A5568")
-    )
-
-    # Styles for Flowchart cells
-    cell_style = ParagraphStyle(
-        'FlowCell',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=9,
-        leading=12,
-        alignment=1, # Center
-        textColor=primary_color
-    )
-    
-    arrow_style = ParagraphStyle(
-        'FlowArrow',
-        parent=styles['Normal'],
-        fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=12,
-        alignment=1, # Center
-        textColor=primary_color
-    )
-    
-    label_style = ParagraphStyle(
-        'FlowLabel',
-        parent=styles['Normal'],
-        fontName='Helvetica-Oblique',
-        fontSize=8,
-        leading=10,
-        alignment=1, # Center
-        textColor=colors.HexColor("#4A5568")
+        textColor=colors.HexColor("#718096")
     )
 
     story = []
     
     # ==================== PAGE 1: COVER PAGE ====================
     story.append(Spacer(1, 100))
-    story.append(Paragraph("System Architecture Specification", subtitle_style))
-    story.append(Paragraph("Hybrid AI Research Assistant", title_style))
+    story.append(Paragraph("Hybrid AI Research<br/>Assistant", title_style))
     
-    # Clean black divider rule
-    d = Table([[""]], colWidths=[200], rowHeights=[2.5])
+    # Colored accent line
+    d = Table([[""]], colWidths=[150], rowHeights=[4])
     d.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), primary_color),
+        ('BACKGROUND', (0,0), (-1,-1), secondary_color),
         ('BOTTOMPADDING', (0,0), (-1,-1), 0),
         ('TOPPADDING', (0,0), (-1,-1), 0),
     ]))
     story.append(d)
-    story.append(Spacer(1, 15))
+    story.append(Spacer(1, 20))
     
-    story.append(Paragraph(
-        "A technical specification for the design and deployment of a cost-optimal "
-        "hybrid inference architecture. Combining localized quantized small language models (SLMs) "
-        "with cloud API engines (LLMs) to ensure performance scalability, privacy protection, and zero-cost edge operations.",
-        subtitle_style
-    ))
-    story.append(Spacer(1, 180))
+    story.append(Paragraph("A production-ready multi-tier web application integrating local Edge intelligence (SLMs) with commercial Cloud services (LLMs) for cost-optimal and high-performance cognitive computing.", subtitle_style))
+    story.append(Spacer(1, 150))
     
     # Metadata block
     meta_text = """
-    <b>Prepared By:</b> Ashish Singh<br/>
-    <b>Project Codebase:</b> github.com/Ashishsingh2005-beep/Hybrid-AI-Research-Assistant<br/>
-    <b>Document Version:</b> 1.0.0 (Production Setup)<br/>
-    <b>Deployment Target:</b> Streamlit Cloud / On-Device Windows Environments
+    <b>Author:</b> Ashish Singh<br/>
+    <b>Repository:</b> <font color="#2B6CB0">github.com/Ashishsingh2005-beep/Hybrid-AI-Research-Assistant</font><br/>
+    <b>Date:</b> July 2026<br/>
+    <b>Frameworks:</b> Streamlit, Llama.cpp, Google Gemini API
     """
     story.append(Paragraph(meta_text, meta_style))
     story.append(PageBreak())
     
-    # ==================== PAGE 2: SUMMARY & TECH STACK ====================
-    story.append(Paragraph("1. System Design Summary", h1_style))
+    # ==================== PAGE 2: EXECUTIVE SUMMARY & TECH STACK ====================
+    story.append(Paragraph("1. Executive Summary", h1_style))
     summary_text = (
-        "The <b>Hybrid AI Research Assistant</b> implements a dual-inference architectural pattern "
-        "to manage the operational cost and latency profiles of generative AI solutions. By utilizing "
-        "on-device Small Language Models (SLMs) for low-complexity inputs, the system ensures offline capability, "
-        "absolute data privacy, and zero token costs. When inputs exceed the linguistic capacity of local models "
-        "or require document context parsing (e.g. PDF analysis), the system escalates the query to Google Cloud's "
-        "commercial Gemini models via secure API communication."
+        "The <b>Hybrid AI Research Assistant</b> is a software solution designed to solve the critical trade-off "
+        "between operating costs, data privacy, and cognitive reasoning capabilities in large-scale AI applications. "
+        "By utilizing a <b>Dual-Inference Engine (Hybrid Architecture)</b>, the application handles routine, low-complexity "
+        "tasks locally using a <b>Small Language Model (SLM)</b> running directly on standard CPU hardware without "
+        "any API costs. For complex reasoning, multi-document research, or long-form analysis, the system dynamically "
+        "routes queries to a commercial <b>Cloud Large Language Model (LLM)</b> via API."
     )
     story.append(Paragraph(summary_text, body_style))
     story.append(Spacer(1, 10))
     
-    story.append(Paragraph("2. Technical Stack Components", h1_style))
-    story.append(Paragraph("The software system compiles several open-source execution libraries and cloud resources into a unified, responsive interface:", body_style))
-    story.append(Spacer(1, 5))
+    story.append(Paragraph("2. Technology Stack & Tools Used", h1_style))
+    story.append(Paragraph("The application leverages open-source local inference engines alongside cloud APIs to form a unified interface. Below is the list of core tools used in the development of this project:", body_style))
+    story.append(Spacer(1, 8))
     
-    # Tech Stack Table (Styled strictly in Black and White)
+    # Tech Stack Table
     tech_data = [
-        [Paragraph("<b>Component / Library</b>", body_style), Paragraph("<b>Engineering Role</b>", body_style), Paragraph("<b>Functionality Description</b>", body_style)],
-        [Paragraph("<b>Streamlit Framework</b>", body_style), Paragraph("User Interface Panel", body_style), Paragraph("Handles the responsive UI rendering, interactive settings management, and file states.", body_style)],
-        [Paragraph("<b>Google Gemini API</b>", body_style), Paragraph("Cloud LLM Controller", body_style), Paragraph("Executes complex semantic searches, high-context PDF summarization, and evaluation.", body_style)],
-        [Paragraph("<b>llama-cpp-python</b>", body_style), Paragraph("Local Model Loader", body_style), Paragraph("Injects quantized GGUF models directly into local application memory for private execution.", body_style)],
-        [Paragraph("<b>llama-server.exe</b>", body_style), Paragraph("C++ Model Host", body_style), Paragraph("Compiles model binaries for C/C++ acceleration on Windows machines.", body_style)],
-        [Paragraph("<b>PyPDF</b>", body_style), Paragraph("Document Parser", body_style), Paragraph("Parses PDFs and converts research papers to clean text strings.", body_style)],
-        [Paragraph("<b>Plotly & Pandas</b>", body_style), Paragraph("Diagnostics & Analytics", body_style), Paragraph("Tracks, processes, and displays benchmarks (generation speed, cost, and latency charts).", body_style)]
+        [Paragraph("<b>Technology / Tool</b>", body_style), Paragraph("<b>Domain</b>", body_style), Paragraph("<b>Key Role in Project</b>", body_style)],
+        [Paragraph("<b>Streamlit</b>", body_style), Paragraph("Frontend UI Layer", body_style), Paragraph("Renders interactive dashboard, chat components, file upload, and custom styling.", body_style)],
+        [Paragraph("<b>Google Gemini API</b>", body_style), Paragraph("Cloud LLM Engine", body_style), Paragraph("Performs complex reasoning, multi-document PDF analysis, and automated evaluation.", body_style)],
+        [Paragraph("<b>llama-cpp-python</b>", body_style), Paragraph("Local SLM Loader", body_style), Paragraph("Loads quantized GGUF models directly into Python memory for low-latency offline inference.", body_style)],
+        [Paragraph("<b>llama-server.exe</b>", body_style), Paragraph("Local C++ Server", body_style), Paragraph("Compiles and runs model server utilizing highly optimized C/C++ backend for Windows systems.", body_style)],
+        [Paragraph("<b>PyPDF (pypdf)</b>", body_style), Paragraph("PDF Parser", body_style), Paragraph("Extracts textual contents from scientific research papers and reports for document QA.", body_style)],
+        [Paragraph("<b>Plotly & Pandas</b>", body_style), Paragraph("Analytics Dashboard", body_style), Paragraph("Processes inference benchmarks (tokens/sec, cost, latency) and renders comparison bar charts.", body_style)],
+        [Paragraph("<b>psutil</b>", body_style), Paragraph("System Diagnostics", body_style), Paragraph("Monitors background execution states and manages active local llama servers.", body_style)]
     ]
     
-    t = Table(tech_data, colWidths=[120, 110, 274])
+    t = Table(tech_data, colWidths=[110, 110, 284])
     t.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), light_bg),
+        ('BACKGROUND', (0,0), (-1,0), border_color),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_bg]),
-        ('GRID', (0,0), (-1,-1), 0.75, colors.HexColor("#1A202C")),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E0")),
     ]))
     story.append(t)
     story.append(PageBreak())
     
-    # ==================== PAGE 3: ARCHITECTURE & FUNCTIONALITIES ====================
-    story.append(Paragraph("3. Functional Architecture Design", h1_style))
-    story.append(Paragraph("Below is the formal query processing sequence. It describes how queries are intercepted, routed, and resolved dynamically:", body_style))
+    # ==================== PAGE 3: CORE FEATURES & HYBRID ARCHITECTURE ====================
+    story.append(Paragraph("3. Core Application Features", h1_style))
+    
+    story.append(Paragraph("<b>A. Intelligent Routing (Auto-Routing Mode)</b>", h2_style))
+    story.append(Paragraph("A custom decision-making router evaluates every user query before execution based on rules:", bullet_style))
+    story.append(Paragraph("• <i>Word Count Threshold:</i> Short questions (e.g., &lt; 50 words) are handled locally by the SLM to reduce cloud API billing.", bullet_style))
+    story.append(Paragraph("• <i>Capability Detection:</i> Queries requiring real-time/latest data (e.g., 'news', 'weather') or uploaded PDF context are automatically escalated to the Cloud LLM.", bullet_style))
+    
+    story.append(Paragraph("<b>B. Offline Capability & Simulated Mode</b>", h2_style))
+    story.append(Paragraph("• The local engine works entirely offline without internet, preventing sensitive data leakage.", bullet_style))
+    story.append(Paragraph("• Built-in <i>Simulated Offline Mode</i> automatically intercepts file-missing errors and provides lightweight mocks to allow design prototyping and UI evaluation on systems without model files downloaded.", bullet_style))
+    
+    story.append(Paragraph("<b>C. Side-by-Side Model Comparison</b>", h2_style))
+    story.append(Paragraph("• Developers can run parallel inference on Local SLM vs. Cloud LLM for the same prompt.", bullet_style))
+    story.append(Paragraph("• Outputs live metrics (latency, speed in tokens/second, and exact API costs).", bullet_style))
+    
+    story.append(Paragraph("<b>D. Automated AI Critique (Auto-Evaluation)</b>", h2_style))
+    story.append(Paragraph("• The Cloud LLM acts as an independent judge on the comparison screen, evaluating both generated answers for logical consistency, accuracy, and grammar, outputting a professional scorecard.", bullet_style))
+    
     story.append(Spacer(1, 10))
+    story.append(Paragraph("4. Key Architectural Flow", h1_style))
+    story.append(Paragraph("Below is a conceptual representation of the query routing workflow in the hybrid assistant:", body_style))
+    story.append(Spacer(1, 5))
     
-    # --- Native Flowchart using styled tables (No ASCII art, pure solid styling) ---
-    flow_data = [
-        # Row 0: User Query
-        ["", Paragraph("<b>User Input Query</b><br/><font size=7.5 color='#4A5568'>Prompt typed into chat panel or comparison dashboard</font>", cell_style), ""],
-        # Row 1: Arrow Down
-        ["", Paragraph("▼", arrow_style), ""],
-        # Row 2: Decision Router
-        ["", Paragraph("<b>Intelligent Decision Router</b><br/><font size=7.5 color='#4A5568'>Analyzes character length, keywords, and PDF attachments</font>", cell_style), ""],
-        # Row 3: Labels for path
-        [Paragraph("<i>Short Query (&lt; 50 words) & No PDF</i>", label_style), "", Paragraph("<i>Long Query OR Research PDF Uploaded</i>", label_style)],
-        # Row 4: Arrows pointing down from decision
-        [Paragraph("▼", arrow_style), "", Paragraph("▼", arrow_style)],
-        # Row 5: Endpoint models
-        [Paragraph("<b>💻 Local SLM</b><br/>• Quantized GGUF Model<br/>• Local CPU/RAM execution<br/>• 100% Free & Offline", cell_style), "", Paragraph("<b>☁️ Cloud LLM</b><br/>• Google Gemini API<br/>• External cloud engine<br/>• Multi-document logic", cell_style)],
-        # Row 6: Merge arrows
-        [Paragraph("▼", arrow_style), "", Paragraph("▼", arrow_style)],
-        # Row 7: Output response
-        ["", Paragraph("<b>Streamed Output Response</b><br/><font size=7.5 color='#4A5568'>Rendered in Streamlit UI via Python yield generator</font>", cell_style), ""]
-    ]
+    # Simple ASCII Diagram represented inside a light grey table for formatting
+    diagram_text = """
+                   [ User Input Prompt ]
+                             │
+                      [ Streamlit UI ]
+                             │
+            ┌────────────────┴────────────────┐
+      (Short Query)                     (PDF / Complex Query)
+            ▼                                 ▼
+      [ Local SLM ]                     [ Cloud LLM ]
+       - On-Device                       - Google Gemini API
+       - 100% Free & Private             - High Reasoning Power
+       - Quantized GGUF Model            - Summarization / Search
+            │                                 │
+            └────────────────┬────────────────┘
+                             ▼
+                      [ Final Streamed Answer ]
+    """
     
-    flow_table = Table(flow_data, colWidths=[230, 44, 230])
-    flow_table.setStyle(TableStyle([
-        # Spans
-        ('SPAN', (0,0), (2,0)),
-        ('SPAN', (0,1), (2,1)),
-        ('SPAN', (0,2), (2,2)),
-        ('SPAN', (0,7), (2,7)),
-        
-        # Grid line borders for the flowchart blocks
-        ('BOX', (0,0), (2,0), 1, border_color),
-        ('BACKGROUND', (0,0), (2,0), colors.white),
-        
-        ('BOX', (0,2), (2,2), 1, border_color),
-        ('BACKGROUND', (0,2), (2,2), colors.white),
-        
-        ('BOX', (0,5), (0,5), 1, border_color),
-        ('BACKGROUND', (0,5), (0,5), colors.white),
-        
-        ('BOX', (2,5), (2,5), 1, border_color),
-        ('BACKGROUND', (2,5), (2,5), colors.white),
-        
-        ('BOX', (0,7), (2,7), 1, border_color),
-        ('BACKGROUND', (0,7), (2,7), colors.white),
-        
-        # Adjust paddings
+    diag_table = Table([[diagram_text]], colWidths=[504])
+    diag_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), light_bg),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('FONTNAME', (0,0), (-1,-1), 'Courier'),
+        ('FONTSIZE', (0,0), (-1,-1), 8.5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 12),
+        ('TOPPADDING', (0,0), (-1,-1), 12),
+        ('LEADPADDING', (0,0), (-1,-1), 10),
+        ('GRID', (0,0), (-1,-1), 1, border_color),
     ]))
-    story.append(flow_table)
-    story.append(Spacer(1, 15))
-    
-    # Core Functionalities Section
-    story.append(Paragraph("4. Core System Features", h1_style))
-    
-    story.append(Paragraph("<b>A. Dynamic Query Interception & Routing</b>", h2_style))
-    story.append(Paragraph("A routing rule intercepts every prompt at execution time. If the system detects internet-dependent keywords or a parsed file context, it escalates to Cloud LLM. Otherwise, short prompts are directed to local CPU execution.", bullet_style))
-    
-    story.append(Paragraph("<b>B. Error-Safe Local Simulation</b>", h2_style))
-    story.append(Paragraph("To ensure the UI is functional on hosts without model files downloaded (e.g. testing environments), an automatic check triggers Simulated Offline Mode. This allows full prototyping of UI interactions using preconfigured data blocks.", bullet_style))
-    
-    story.append(Paragraph("<b>C. Performance Metrics Dashboard</b>", h2_style))
-    story.append(Paragraph("On-device and cloud models are benchmarked side-by-side. The dashboard extracts generation speed (tokens/second), exact response times, and API cost, presenting comparative charts dynamically.", bullet_style))
-    
-    story.append(Paragraph("<b>D. Automated AI Critique Scorecard</b>", h2_style))
-    story.append(Paragraph("When comparisons are executed, the system issues a prompt to the Cloud LLM to act as a judge. It compares both model responses for logical coherence, detail, and factual accuracy, outputting a review scorecard.", bullet_style))
+    story.append(diag_table)
     
     # Build Document
     doc.build(story, canvasmaker=NumberedCanvas)
