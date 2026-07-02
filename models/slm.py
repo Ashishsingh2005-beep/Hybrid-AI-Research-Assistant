@@ -280,7 +280,7 @@ def generate_local_slm_response(
                     "cost": 0.0
                 }
                 yield stats
-            return {"stream": simulated_stream}
+            return {"stream": simulated_stream()}
         else:
             text = f"*(Note: Local model file not found on disk. Running in Simulated Offline Mode. Go to settings to download it)*\n\n" + get_simulated_response(prompt, model_name)
             elapsed = time.time() - start_time
@@ -343,7 +343,7 @@ def generate_local_slm_response(
                         yield stats
                     except Exception as e:
                         yield f"\n[Error in Local SLM: {str(e)}]"
-                return {"stream": stream_generator}
+                return {"stream": stream_generator()}
             else:
                 response = llm.create_chat_completion(
                     messages=[{"role": "user", "content": prompt}],
@@ -430,7 +430,7 @@ def generate_local_slm_response(
                     yield stats
                 except Exception as e:
                     yield f"\n[Error with local llama-server: {str(e)}]"
-            return {"stream": stream_generator}
+            return {"stream": stream_generator()}
         else:
             try:
                 r = requests.post(url, json=data, headers=headers)
@@ -469,7 +469,7 @@ def generate_local_slm_response(
                 "cost": 0.0
             }
             yield stats
-        return {"stream": simulated_stream}
+        return {"stream": simulated_stream()}
     else:
         text = get_simulated_response(prompt, model_name)
         elapsed = time.time() - start_time

@@ -48,7 +48,14 @@ col_ctrl1, col_ctrl2 = st.columns(2)
 with col_ctrl1:
     slm_choice = st.selectbox("Local SLM to compare", options=list(SLM_MODELS.keys()), index=list(SLM_MODELS.keys()).index(st.session_state["slm_model"]))
 with col_ctrl2:
-    llm_choice = st.selectbox("Cloud LLM to compare", options=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash"], index=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash"].index(st.session_state["llm_model"]))
+    llm_options = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+    if st.session_state["llm_model"] not in llm_options:
+        st.session_state["llm_model"] = "gemini-2.5-flash"
+    llm_choice = st.selectbox(
+        "Cloud LLM to compare", 
+        options=llm_options, 
+        index=llm_options.index(st.session_state["llm_model"])
+    )
 
 compare_button = st.button("⚖️ Generate & Compare Answers", type="primary", use_container_width=True)
 
@@ -97,7 +104,7 @@ if compare_button:
                     stream=True
                 )
                 
-                for chunk in res_slm["stream"]():
+                for chunk in res_slm["stream"]:
                     if isinstance(chunk, dict):
                         slm_stats = chunk
                     else:
@@ -129,7 +136,7 @@ if compare_button:
                     stream=True
                 )
                 
-                for chunk in res_llm["stream"]():
+                for chunk in res_llm["stream"]:
                     if isinstance(chunk, dict):
                         llm_stats = chunk
                     else:
@@ -220,7 +227,7 @@ if compare_button:
             )
             
             full_eval = ""
-            for chunk in res_eval["stream"]():
+            for chunk in res_eval["stream"]:
                 if not isinstance(chunk, dict):
                     full_eval += chunk
                     eval_placeholder.markdown(full_eval + "▌")

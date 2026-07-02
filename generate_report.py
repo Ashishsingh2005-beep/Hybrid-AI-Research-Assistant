@@ -105,8 +105,8 @@ def create_report():
         fontSize=14,
         leading=18,
         textColor=primary_color,
-        spaceBefore=12,
-        spaceAfter=6,
+        spaceBefore=10,
+        spaceAfter=4,
         keepWithNext=True
     )
 
@@ -117,8 +117,8 @@ def create_report():
         fontSize=11,
         leading=14,
         textColor=secondary_color,
-        spaceBefore=8,
-        spaceAfter=4,
+        spaceBefore=6,
+        spaceAfter=3,
         keepWithNext=True
     )
     
@@ -129,7 +129,7 @@ def create_report():
         fontSize=9.0,
         leading=12.5,
         textColor=dark_neutral,
-        spaceAfter=6
+        spaceAfter=4
     )
 
     bullet_style = ParagraphStyle(
@@ -137,7 +137,7 @@ def create_report():
         parent=body_style,
         leftIndent=15,
         firstLineIndent=-10,
-        spaceAfter=3
+        spaceAfter=2
     )
     
     meta_style = ParagraphStyle(
@@ -189,11 +189,11 @@ def create_report():
         "routes queries to a commercial <b>Cloud Large Language Model (LLM)</b> via API."
     )
     story.append(Paragraph(summary_text, body_style))
-    story.append(Spacer(1, 6))
+    story.append(Spacer(1, 4))
     
     story.append(Paragraph("2. Technology Stack & Tools Used", h1_style))
     story.append(Paragraph("The application leverages open-source local inference engines alongside cloud APIs to form a unified interface. Below is the list of core tools used in the development of this project:", body_style))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 2))
     
     # Tech Stack Table
     tech_data = [
@@ -211,32 +211,40 @@ def create_report():
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), border_color),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 2),
+        ('TOPPADDING', (0,0), (-1,-1), 2),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_bg]),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E0")),
     ]))
     story.append(t)
-    story.append(PageBreak())
+    story.append(Spacer(1, 8))
     
-    # ==================== PAGE 3: CORE FEATURES & HYBRID ARCHITECTURE ====================
+    # ==================== CORE FEATURES & HYBRID ARCHITECTURE ====================
     story.append(Paragraph("3. Core Application Features", h1_style))
     
-    story.append(Paragraph("<b>A. Intelligent Routing (Auto-Routing Mode)</b>", h2_style))
-    story.append(Paragraph("A custom decision-making router evaluates every user query before execution based on rules:", bullet_style))
-    story.append(Paragraph("• <i>Word Count Threshold:</i> Short questions (e.g., &lt; 50 words) are handled locally by the SLM to reduce cloud API billing.", bullet_style))
-    story.append(Paragraph("• <i>Capability Detection:</i> Queries requiring real-time/latest data (e.g., 'news', 'weather') or uploaded PDF context are automatically escalated to the Cloud LLM.", bullet_style))
+    story.append(KeepTogether([
+        Paragraph("<b>A. Intelligent Routing (Auto-Routing Mode)</b>", h2_style),
+        Paragraph("A custom decision-making router evaluates every user query before execution based on rules:", bullet_style),
+        Paragraph("• <i>Word Count Threshold:</i> Short questions (e.g., &lt; 50 words) are handled locally by the SLM to reduce cloud API billing.", bullet_style),
+        Paragraph("• <i>Capability Detection:</i> Queries requiring real-time/latest data (e.g., 'news', 'weather') or uploaded PDF context are automatically escalated to the Cloud LLM.", bullet_style),
+    ]))
     
-    story.append(Paragraph("<b>B. Offline Capability & Simulated Mode</b>", h2_style))
-    story.append(Paragraph("• The local engine works entirely offline without internet, preventing sensitive data leakage.", bullet_style))
-    story.append(Paragraph("• Built-in <i>Simulated Offline Mode</i> automatically intercepts file-missing errors and provides lightweight mocks to allow design prototyping and UI evaluation on systems without model files downloaded.", bullet_style))
+    story.append(KeepTogether([
+        Paragraph("<b>B. Offline Capability & Simulated Mode</b>", h2_style),
+        Paragraph("• The local engine works entirely offline without internet, preventing sensitive data leakage.", bullet_style),
+        Paragraph("• Built-in <i>Simulated Offline Mode</i> automatically intercepts file-missing errors and provides lightweight mocks to allow design prototyping and UI evaluation on systems without model files downloaded.", bullet_style),
+    ]))
     
-    story.append(Paragraph("<b>C. Side-by-Side Model Comparison</b>", h2_style))
-    story.append(Paragraph("• Developers can run parallel inference on Local SLM vs. Cloud LLM for the same prompt.", bullet_style))
-    story.append(Paragraph("• Outputs live metrics (latency, speed in tokens/second, and exact API costs).", bullet_style))
+    story.append(KeepTogether([
+        Paragraph("<b>C. Side-by-Side Model Comparison</b>", h2_style),
+        Paragraph("• Developers can run parallel inference on Local SLM vs. Cloud LLM for the same prompt.", bullet_style),
+        Paragraph("• Outputs live metrics (latency, speed in tokens/second, and exact API costs).", bullet_style),
+    ]))
     
-    story.append(Paragraph("<b>D. Automated AI Critique (Auto-Evaluation)</b>", h2_style))
-    story.append(Paragraph("• The Cloud LLM acts as an independent judge on the comparison screen, evaluating both generated answers for logical consistency, accuracy, and grammar, outputting a professional scorecard.", bullet_style))
+    story.append(KeepTogether([
+        Paragraph("<b>D. Automated AI Critique (Auto-Evaluation)</b>", h2_style),
+        Paragraph("• The Cloud LLM acts as an independent judge on the comparison screen, evaluating both generated answers for logical consistency, accuracy, and grammar, outputting a professional scorecard.", bullet_style),
+    ]))
     
     story.append(Spacer(1, 4))
     story.append(Paragraph("4. Key Architectural Flow", h1_style))

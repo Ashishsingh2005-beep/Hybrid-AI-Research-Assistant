@@ -46,7 +46,7 @@ st.markdown("""
 if "slm_model" not in st.session_state:
     st.session_state["slm_model"] = list(SLM_MODELS.keys())[0]
 if "llm_model" not in st.session_state:
-    st.session_state["llm_model"] = "gemini-1.5-flash"
+    st.session_state["llm_model"] = "gemini-2.5-flash"
 if "local_temp" not in st.session_state:
     st.session_state["local_temp"] = 0.7
 if "local_max_tokens" not in st.session_state:
@@ -98,6 +98,26 @@ with st.sidebar:
         help="Select which AI engine handles your questions."
     )
     
+    # Model Dropdowns for convenience
+    if model_mode in ["Local SLM Only", "Intelligent Auto"]:
+        selected_slm = st.selectbox(
+            "Active Local SLM",
+            options=list(SLM_MODELS.keys()),
+            index=list(SLM_MODELS.keys()).index(st.session_state["slm_model"])
+        )
+        st.session_state["slm_model"] = selected_slm
+        
+    if model_mode in ["Cloud LLM Only", "Intelligent Auto"]:
+        llm_options = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+        if st.session_state["llm_model"] not in llm_options:
+            st.session_state["llm_model"] = "gemini-2.5-flash"
+        selected_llm = st.selectbox(
+            "Active Cloud LLM",
+            options=llm_options,
+            index=llm_options.index(st.session_state["llm_model"])
+        )
+        st.session_state["llm_model"] = selected_llm
+        
     st.markdown("---")
     
     # PDF Upload Panel
@@ -203,7 +223,7 @@ if st.session_state.get("pdf_summarizing", False):
             
             full_summary = ""
             stats = {}
-            for chunk in res["stream"]():
+            for chunk in res["stream"]:
                 if isinstance(chunk, dict):
                     stats = chunk
                 else:
@@ -279,7 +299,7 @@ if user_input := st.chat_input("Ask a question..."):
                 
                 full_res = ""
                 stats = {}
-                for chunk in res["stream"]():
+                for chunk in res["stream"]:
                     if isinstance(chunk, dict):
                         stats = chunk
                     else:
@@ -325,7 +345,7 @@ if user_input := st.chat_input("Ask a question..."):
                 
                 full_res = ""
                 stats = {}
-                for chunk in res["stream"]():
+                for chunk in res["stream"]:
                     if isinstance(chunk, dict):
                         stats = chunk
                     else:

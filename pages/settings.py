@@ -11,7 +11,7 @@ from models.slm import (
     get_llama_bin_dir,
     terminate_existing_llama_server
 )
-from models.llm import is_api_key_configured
+from models.llm import is_api_key_configured, get_available_models
 
 st.set_page_config(page_title="Settings - Hybrid AI Assistant", layout="wide")
 
@@ -55,7 +55,7 @@ st.markdown("Configure your Local Small Language Model (SLM), Cloud LLM API cred
 if "slm_model" not in st.session_state:
     st.session_state["slm_model"] = list(SLM_MODELS.keys())[0]
 if "llm_model" not in st.session_state:
-    st.session_state["llm_model"] = "gemini-1.5-flash"
+    st.session_state["llm_model"] = "gemini-2.5-flash"
 if "gemini_api_key" not in st.session_state:
     st.session_state["gemini_api_key"] = os.environ.get("GEMINI_API_KEY", "")
 if "local_temp" not in st.session_state:
@@ -120,10 +120,14 @@ with col2:
     st.header("☁️ Cloud LLM Configuration")
     
     # Model Selection
+    llm_options = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+    if st.session_state["llm_model"] not in llm_options:
+        st.session_state["llm_model"] = "gemini-2.5-flash"
+        
     selected_llm = st.selectbox(
         "Choose Cloud LLM",
-        options=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash"],
-        index=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.5-flash"].index(st.session_state["llm_model"])
+        options=llm_options,
+        index=llm_options.index(st.session_state["llm_model"])
     )
     st.session_state["llm_model"] = selected_llm
     
@@ -139,6 +143,15 @@ with col2:
         st.success("✅ API key found in system environment.")
     else:
         st.warning("⚠️ No Gemini API Key configured. Cloud LLM features will be disabled.")
+
+    if st.session_state["gemini_api_key"] or os.environ.get("GEMINI_API_KEY"):
+        if st.button("🔍 Diagnose API Key & List Available Models"):
+            with st.spinner("Querying Google Gemini API..."):
+                available_models = get_available_models()
+                if available_models:
+                    st.success(f"Successfully authenticated! Available models for your API key:\n" + "\n".join([f"- `{m}`" for m in available_models]))
+                else:
+                    st.error("Authentication failed or key has no access to any model. Please check if your API key is correct/valid or if it's still propagating on Google's side.")
         
     st.markdown("---")
     st.subheader("Model Parameters")

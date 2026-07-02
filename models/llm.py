@@ -9,8 +9,11 @@ logger = logging.getLogger(__name__)
 # Pricing per million tokens (as of standard Gemini 1.5 pricing)
 PRICING = {
     "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
+    "gemini-1.5-flash-latest": {"input": 0.075, "output": 0.30},
     "gemini-1.5-pro": {"input": 1.25, "output": 5.00},
+    "gemini-1.5-pro-latest": {"input": 1.25, "output": 5.00},
     "gemini-2.5-flash": {"input": 0.075, "output": 0.30},
+    "gemini-1.5-flash-8b": {"input": 0.0375, "output": 0.15},
 }
 
 def is_api_key_configured(api_key: str = None) -> bool:
@@ -29,6 +32,24 @@ def init_gemini(api_key: str = None):
         raise ValueError("Gemini API Key is not set. Please provide it in settings/sidebar.")
     genai.configure(api_key=key)
 
+def get_available_models(api_key: str = None) -> list[str]:
+    """
+    Retrieves the list of models supported by the API key.
+    """
+    try:
+        init_gemini(api_key)
+        models = []
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                name = m.name
+                if name.startswith("models/"):
+                    name = name[7:]
+                models.append(name)
+        return models
+    except Exception as e:
+        logger.error(f"Failed to list models: {e}")
+        return []
+
 def count_tokens_locally(text: str) -> int:
     """
     Rough fallback token estimator (approx 4 chars per token).
@@ -38,7 +59,7 @@ def count_tokens_locally(text: str) -> int:
 def generate_llm_response(
     prompt: str,
     system_prompt: str = None,
-    model_name: str = "gemini-1.5-flash",
+    model_name: str = "gemini-2.5-flash",
     temperature: float = 0.7,
     max_tokens: int = 1000,
     api_key: str = None,
@@ -105,7 +126,16 @@ def generate_llm_response(
                 yield stats
             except Exception as e:
                 logger.error(f"Error in LLM stream generation: {e}")
-                yield f"\n[Error during generation: {str(e)}]"
+                err_msg = f"\n[Error during generation: {str(e)}]"
+                try:
+                    models = get_available_models(api_key)
+                    if models:
+                        err_msg += f"\n\n🔍 **Diagnostics**: Available models for your API key:\n" + "\n".join([f"- `{m}`" for m in models])
+                    else:
+                        err_msg += f"\n\n🔍 **Diagnostics**: Checked your key, but no models were returned. Ensure the API key has active permission for Gemini models or try a different key."
+                except Exception as diag_err:
+                    err_msg += f"\n\n🔍 **Diagnostics**: Failed to run diagnostics check: {diag_err}"
+                yield err_msg
                 
         return {"stream": stream_generator()}
     else:
