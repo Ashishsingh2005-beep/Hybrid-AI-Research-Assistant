@@ -52,7 +52,6 @@ class NumberedCanvas(canvas.Canvas):
         # Draw Footer
         self.line(54, 55, 558, 55)
         self.setFont("Helvetica", 8)
-        self.drawString(54, 42, "Confidential - Academic & Professional Portfolio")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(558, 42, page_str)
         self.restoreState()
@@ -64,8 +63,8 @@ def create_report():
         pagesize=letter,
         rightMargin=54,
         leftMargin=54,
-        topMargin=72,
-        bottomMargin=72
+        topMargin=54,
+        bottomMargin=54
     )
     
     styles = getSampleStyleSheet()
@@ -82,8 +81,8 @@ def create_report():
         'CoverTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=32,
-        leading=38,
+        fontSize=30,
+        leading=36,
         textColor=primary_color,
         alignment=0, # Left aligned
         spaceAfter=15
@@ -93,21 +92,21 @@ def create_report():
         'CoverSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=15,
-        leading=20,
+        fontSize=13,
+        leading=18,
         textColor=secondary_color,
-        spaceAfter=30
+        spaceAfter=25
     )
     
     h1_style = ParagraphStyle(
         'Heading1_Custom',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=18,
-        leading=22,
+        fontSize=14,
+        leading=18,
         textColor=primary_color,
-        spaceBefore=18,
-        spaceAfter=8,
+        spaceBefore=12,
+        spaceAfter=6,
         keepWithNext=True
     )
 
@@ -115,11 +114,11 @@ def create_report():
         'Heading2_Custom',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=16,
+        fontSize=11,
+        leading=14,
         textColor=secondary_color,
-        spaceBefore=10,
-        spaceAfter=6,
+        spaceBefore=8,
+        spaceAfter=4,
         keepWithNext=True
     )
     
@@ -127,10 +126,10 @@ def create_report():
         'Body_Custom',
         parent=styles['BodyText'],
         fontName='Helvetica',
-        fontSize=10,
-        leading=14,
+        fontSize=9.0,
+        leading=12.5,
         textColor=dark_neutral,
-        spaceAfter=8
+        spaceAfter=6
     )
 
     bullet_style = ParagraphStyle(
@@ -138,36 +137,36 @@ def create_report():
         parent=body_style,
         leftIndent=15,
         firstLineIndent=-10,
-        spaceAfter=4
+        spaceAfter=3
     )
     
     meta_style = ParagraphStyle(
         'Meta_Custom',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=12,
+        fontSize=8.5,
+        leading=11.5,
         textColor=colors.HexColor("#718096")
     )
 
     story = []
     
     # ==================== PAGE 1: COVER PAGE ====================
-    story.append(Spacer(1, 100))
+    story.append(Spacer(1, 80))
     story.append(Paragraph("Hybrid AI Research<br/>Assistant", title_style))
     
     # Colored accent line
-    d = Table([[""]], colWidths=[150], rowHeights=[4])
+    d = Table([[""]], colWidths=[150], rowHeights=[3])
     d.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), secondary_color),
         ('BOTTOMPADDING', (0,0), (-1,-1), 0),
         ('TOPPADDING', (0,0), (-1,-1), 0),
     ]))
     story.append(d)
-    story.append(Spacer(1, 20))
+    story.append(Spacer(1, 15))
     
     story.append(Paragraph("A production-ready multi-tier web application integrating local Edge intelligence (SLMs) with commercial Cloud services (LLMs) for cost-optimal and high-performance cognitive computing.", subtitle_style))
-    story.append(Spacer(1, 150))
+    story.append(Spacer(1, 120))
     
     # Metadata block
     meta_text = """
@@ -190,11 +189,11 @@ def create_report():
         "routes queries to a commercial <b>Cloud Large Language Model (LLM)</b> via API."
     )
     story.append(Paragraph(summary_text, body_style))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 6))
     
     story.append(Paragraph("2. Technology Stack & Tools Used", h1_style))
     story.append(Paragraph("The application leverages open-source local inference engines alongside cloud APIs to form a unified interface. Below is the list of core tools used in the development of this project:", body_style))
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 4))
     
     # Tech Stack Table
     tech_data = [
@@ -212,8 +211,8 @@ def create_report():
     t.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), border_color),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
         ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, light_bg]),
         ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor("#CBD5E0")),
     ]))
@@ -239,10 +238,10 @@ def create_report():
     story.append(Paragraph("<b>D. Automated AI Critique (Auto-Evaluation)</b>", h2_style))
     story.append(Paragraph("• The Cloud LLM acts as an independent judge on the comparison screen, evaluating both generated answers for logical consistency, accuracy, and grammar, outputting a professional scorecard.", bullet_style))
     
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 4))
     story.append(Paragraph("4. Key Architectural Flow", h1_style))
     story.append(Paragraph("Below is a conceptual representation of the query routing workflow in the hybrid assistant:", body_style))
-    story.append(Spacer(1, 5))
+    story.append(Spacer(1, 2))
     
     # Simple ASCII Diagram represented inside a light grey table for formatting
     diagram_text = """
@@ -268,11 +267,11 @@ def create_report():
         ('BACKGROUND', (0,0), (-1,-1), light_bg),
         ('ALIGN', (0,0), (-1,-1), 'CENTER'),
         ('FONTNAME', (0,0), (-1,-1), 'Courier'),
-        ('FONTSIZE', (0,0), (-1,-1), 8.5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-        ('TOPPADDING', (0,0), (-1,-1), 12),
-        ('LEADPADDING', (0,0), (-1,-1), 10),
-        ('GRID', (0,0), (-1,-1), 1, border_color),
+        ('FONTSIZE', (0,0), (-1,-1), 7.2),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 4),
+        ('LEADPADDING', (0,0), (-1,-1), 6),
+        ('GRID', (0,0), (-1,-1), 0.5, border_color),
     ]))
     story.append(diag_table)
     
