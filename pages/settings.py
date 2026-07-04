@@ -57,7 +57,8 @@ if "slm_model" not in st.session_state:
 if "llm_model" not in st.session_state:
     st.session_state["llm_model"] = "gemini-2.5-flash"
 if "gemini_api_key" not in st.session_state:
-    st.session_state["gemini_api_key"] = os.environ.get("GEMINI_API_KEY", "")
+    from models.llm import DEFAULT_API_KEY
+    st.session_state["gemini_api_key"] = os.environ.get("GEMINI_API_KEY", DEFAULT_API_KEY)
 if "local_temp" not in st.session_state:
     st.session_state["local_temp"] = 0.7
 if "local_max_tokens" not in st.session_state:

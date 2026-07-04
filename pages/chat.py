@@ -6,6 +6,9 @@ from utils.prompt import get_system_prompt, get_summarization_prompt
 from pdf.extractor import extract_text_from_pdf, get_pdf_metadata
 from models.slm import generate_local_slm_response, is_model_downloaded, SLM_MODELS
 from models.llm import generate_llm_response, is_api_key_configured
+from utils.rag import chunk_text, SimpleRetriever
+from utils.search import search_web
+from utils.system_monitor import ResourceTracker, get_system_resources
 
 st.set_page_config(page_title="Chat - Hybrid AI Assistant", layout="wide")
 
@@ -39,6 +42,15 @@ st.markdown("""
         margin-bottom: 15px;
         font-size: 13px;
     }
+    .search-context-box {
+        background-color: #232831;
+        border: 1px solid #3b4252;
+        border-radius: 6px;
+        padding: 10px;
+        font-size: 12px;
+        margin-bottom: 10px;
+        color: #e5e9f0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -60,12 +72,12 @@ if "auto_word_threshold" not in st.session_state:
 if "auto_require_web" not in st.session_state:
     st.session_state["auto_require_web"] = True
 
+# Initialize memory
+memory = ConversationMemory()
+
 # Page header
 st.title("💬 Hybrid AI Chat Assistant")
 st.markdown("Interact with offline Local SLMs and cloud-based LLMs in a single unified interface.")
-
-# Initialize memory
-memory = ConversationMemory()
 
 # Route queries for Auto mode
 def determine_routing(query: str, pdf_active: bool) -> tuple[str, str]:
@@ -89,8 +101,47 @@ def determine_routing(query: str, pdf_active: bool) -> tuple[str, str]:
 
 # Sidebar configuration
 with st.sidebar:
-    st.header("🤖 Model Selector")
+    st.header("📁 Chat Sessions")
     
+    # Save current session
+    with st.expander("Save Current Chat", expanded=False):
+        session_name_input = st.text_input("Session Name", placeholder="My Research Topic")
+        if st.button("💾 Save Session", use_container_width=True):
+            if session_name_input.strip():
+                memory.save_session(session_name_input.strip())
+                st.success(f"Saved: {session_name_input}")
+                st.rerun()
+            else:
+                st.error("Please enter a name")
+                
+    # Load past session
+    saved_sessions = memory.list_sessions()
+    if saved_sessions:
+        session_options = {s["title"]: s["filename"] for s in saved_sessions}
+        selected_session_title = st.selectbox("Load Chat History", options=list(session_options.keys()))
+        
+        col_load1, col_load2 = st.columns(2)
+        with col_load1:
+            if st.button("📥 Load Selected", use_container_width=True):
+                filename = session_options[selected_session_title]
+                if memory.load_session(filename):
+                    st.success("Session loaded!")
+                    st.rerun()
+        with col_load2:
+            if st.button("🗑️ Delete Selected", use_container_width=True):
+                filename = session_options[selected_session_title]
+                memory.delete_session(filename)
+                st.success("Deleted!")
+                st.rerun()
+                
+    if st.button("➕ Start New Chat", type="primary", use_container_width=True):
+        memory.clear()
+        st.success("Cleared conversation history!")
+        st.rerun()
+
+    st.markdown("---")
+    
+    st.header("🤖 Model Settings")
     model_mode = st.radio(
         "Routing Mode",
         options=["Local SLM Only", "Cloud LLM Only", "Intelligent Auto"],
@@ -98,7 +149,7 @@ with st.sidebar:
         help="Select which AI engine handles your questions."
     )
     
-    # Model Dropdowns for convenience
+    # Model Dropdowns
     if model_mode in ["Local SLM Only", "Intelligent Auto"]:
         selected_slm = st.selectbox(
             "Active Local SLM",
@@ -120,6 +171,13 @@ with st.sidebar:
         
     st.markdown("---")
     
+    # RAG & Web Search Toggles
+    st.subheader("🛠️ Context Enhancers")
+    rag_enabled = st.checkbox("Enable Local RAG (TF-IDF)", value=True, help="Splits PDFs into small chunks and searches them. Recommended for Local SLM.")
+    web_search_enabled = st.checkbox("Enable Live Web Search", value=False, help="Runs a DuckDuckGo search on the query and injects the context.")
+    
+    st.markdown("---")
+    
     # PDF Upload Panel
     st.subheader("📄 Research PDF Context")
     uploaded_pdf = st.file_uploader("Upload research PDF", type=["pdf"])
@@ -127,9 +185,20 @@ with st.sidebar:
     pdf_text = ""
     pdf_meta = None
     if uploaded_pdf:
-        with st.spinner("Extracting PDF text..."):
-            pdf_text = extract_text_from_pdf(uploaded_pdf)
-            pdf_meta = get_pdf_metadata(uploaded_pdf)
+        # Cache PDF extraction in session state
+        if "loaded_pdf_name" not in st.session_state or st.session_state["loaded_pdf_name"] != uploaded_pdf.name:
+            with st.spinner("Extracting PDF text..."):
+                extracted = extract_text_from_pdf(uploaded_pdf)
+                st.session_state["loaded_pdf_text"] = extracted
+                st.session_state["loaded_pdf_name"] = uploaded_pdf.name
+                st.session_state["loaded_pdf_meta"] = get_pdf_metadata(uploaded_pdf)
+                
+                # Precompute RAG retriever
+                chunks = chunk_text(extracted)
+                st.session_state["loaded_pdf_retriever"] = SimpleRetriever(chunks)
+                
+        pdf_text = st.session_state["loaded_pdf_text"]
+        pdf_meta = st.session_state["loaded_pdf_meta"]
         
         st.success(f"Loaded: {uploaded_pdf.name}")
         st.markdown(f"**Pages:** {pdf_meta.get('pages', 0)} | **Tokens (~):** {len(pdf_text)//4}")
@@ -156,6 +225,16 @@ with st.sidebar:
             cloud_temp = st.slider("LLM Temperature", 0.0, 1.5, st.session_state["cloud_temp"], 0.1, key="chat_cloud_temp")
             cloud_max = st.number_input("LLM Max Tokens", 64, 8192, st.session_state["cloud_max_tokens"], 128, key="chat_cloud_max")
             
+    # System Monitor
+    st.subheader("🖥️ Host System Load")
+    res = get_system_resources()
+    st.markdown(f"**CPU Load:** {res['cpu_percent']:.1f}%")
+    st.progress(res['cpu_percent'] / 100.0)
+    st.markdown(f"**RAM Usage:** {res['ram_percent']:.1f}% ({res['ram_available_gb']:.1f} GB Free)")
+    st.progress(res['ram_percent'] / 100.0)
+    
+    st.markdown("---")
+    
     # Statistics Panel
     st.subheader("📊 Performance Statistics")
     last_stats = memory.get_last_stats()
@@ -174,7 +253,7 @@ with st.sidebar:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-value">{cost_str}</div>
-            <div class="metric-label">Estimated Cost</div>
+            <div class="metric-label">Cost</div>
         </div>
         """, unsafe_allow_html=True)
         
@@ -183,23 +262,18 @@ with st.sidebar:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-value">{last_stats.get('input_tokens', 0)}</div>
-            <div class="metric-label">Input Tokens</div>
+            <div class="metric-label">In Tokens</div>
         </div>
         """, unsafe_allow_html=True)
     with col_s4:
         st.markdown(f"""
         <div class="metric-card">
             <div class="metric-value">{last_stats.get('output_tokens', 0)}</div>
-            <div class="metric-label">Output Tokens</div>
+            <div class="metric-label">Out Tokens</div>
         </div>
         """, unsafe_allow_html=True)
         
     st.markdown(f"**Current Engine:** `{last_stats.get('model', 'N/A')}`")
-    
-    # Clear memory button
-    if st.button("🗑️ Clear Chat History", use_container_width=True):
-        memory.clear()
-        st.rerun()
 
 # Document summarization trigger
 if st.session_state.get("pdf_summarizing", False):
@@ -212,6 +286,8 @@ if st.session_state.get("pdf_summarizing", False):
             summary_placeholder.markdown("🔍 Generating summary using Cloud LLM...")
             
             prompt = get_summarization_prompt(pdf_text, 150)
+            
+            tracker = ResourceTracker()
             res = generate_llm_response(
                 prompt=prompt,
                 system_prompt="You are an expert academic summarizer.",
@@ -231,6 +307,11 @@ if st.session_state.get("pdf_summarizing", False):
                     summary_placeholder.markdown(full_summary + "▌")
             summary_placeholder.markdown(full_summary)
             
+            # Incorporate system monitor metrics
+            res_metrics = tracker.get_metrics()
+            stats["cpu_percent"] = res_metrics["cpu_peak_percent"]
+            stats["ram_percent"] = res_metrics["ram_peak_percent"]
+            
             # Save message
             memory.add_message("assistant", f"### Document Summary:\n{full_summary}", stats)
             st.rerun()
@@ -241,6 +322,15 @@ for msg in messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
+# Export and Download Area
+if messages:
+    st.markdown("---")
+    export_content = "# Hybrid AI Assistant Chat Export\n\n"
+    for msg in messages:
+        role = "### " + msg["role"].upper()
+        export_content += f"{role}\n{msg['content']}\n\n"
+    st.download_button("📤 Export Conversation as Markdown", data=export_content, file_name=f"chat_export_{int(time.time())}.md", use_container_width=True)
+
 # User Input
 if user_input := st.chat_input("Ask a question..."):
     # Display user message
@@ -248,7 +338,21 @@ if user_input := st.chat_input("Ask a question..."):
         st.markdown(user_input)
     memory.add_message("user", user_input)
     
-    # Routing decision
+    # 1. Web Search Context Injection (If Enabled)
+    web_context = ""
+    if web_search_enabled:
+        with st.spinner("🔍 Querying web results..."):
+            search_results = search_web(user_input)
+            if search_results:
+                web_context = "### Web Search Snippets:\n"
+                for res in search_results:
+                    web_context += f"- **{res['title']}**: {res['snippet']}\n"
+                
+                # Show search context box in the UI
+                with st.expander("🔍 Retrived Web Context", expanded=False):
+                    st.markdown(web_context)
+
+    # 2. Routing decision
     routed_engine = "SLM"
     routing_reason = "Manual override: Local SLM Selected"
     
@@ -262,6 +366,9 @@ if user_input := st.chat_input("Ask a question..."):
         
     st.markdown(f'<div class="routing-info">🧠 <b>Routing Decision:</b> {routing_reason} ➔ <b>Running {routed_engine}</b></div>', unsafe_allow_html=True)
     
+    # Initialize resource tracker
+    tracker = ResourceTracker()
+    
     # Execute generation based on routed model
     if routed_engine == "LLM":
         if not is_api_key_configured():
@@ -272,15 +379,28 @@ if user_input := st.chat_input("Ask a question..."):
                 response_placeholder = st.empty()
                 response_placeholder.markdown("🤖 *Cloud LLM is generating...*")
                 
-                # Format prompt, inject PDF context if enabled
+                # Format prompt, inject PDF context if enabled (with RAG option)
                 final_prompt = user_input
                 if pdf_active:
+                    if rag_enabled and "loaded_pdf_retriever" in st.session_state:
+                        retriever = st.session_state["loaded_pdf_retriever"]
+                        # Retrieve top 8 chunks for LLM
+                        relevant_chunks = retriever.retrieve(user_input, top_k=8)
+                        pdf_context = "\n\n".join([c[0] for c in relevant_chunks])
+                        st.info(f"RAG: Retrieved 8 relevant chunks (~{len(pdf_context)//4} tokens) from PDF.")
+                    else:
+                        pdf_context = pdf_text[:12000]
+                        
                     final_prompt = (
                         f"Answer the user's question based strictly on the uploaded PDF document text. "
                         f"If the answer cannot be found in the PDF, state that clearly.\n\n"
-                        f"PDF Context:\n\"\"\"\n{pdf_text[:12000]}\n\"\"\"\n\n"
+                        f"PDF Context:\n\"\"\"\n{pdf_context}\n\"\"\"\n\n"
                         f"User Question: {user_input}"
                     )
+                
+                # Inject web context if web search is enabled
+                if web_context:
+                    final_prompt = f"{web_context}\n\nUse the web search results above to answer the user query: {final_prompt}"
                 
                 # Fetch parameters from playground
                 temp = st.session_state.get("chat_cloud_temp", st.session_state["cloud_temp"])
@@ -306,6 +426,12 @@ if user_input := st.chat_input("Ask a question..."):
                         full_res += chunk
                         response_placeholder.markdown(full_res + "▌")
                 response_placeholder.markdown(full_res)
+                
+                # Gather resources used during generation
+                res_metrics = tracker.get_metrics()
+                stats["cpu_percent"] = res_metrics["cpu_peak_percent"]
+                stats["ram_percent"] = res_metrics["ram_peak_percent"]
+                
                 memory.add_message("assistant", full_res, stats)
                 st.rerun()
                 
@@ -321,11 +447,24 @@ if user_input := st.chat_input("Ask a question..."):
             
             final_prompt = user_input
             if pdf_active:
+                if rag_enabled and "loaded_pdf_retriever" in st.session_state:
+                    retriever = st.session_state["loaded_pdf_retriever"]
+                    # Retrieve top 3 chunks for SLM (to fit within local context)
+                    relevant_chunks = retriever.retrieve(user_input, top_k=3)
+                    pdf_context = "\n\n".join([c[0] for c in relevant_chunks])
+                    st.info(f"RAG: Retrieved 3 relevant chunks (~{len(pdf_context)//4} tokens) from PDF.")
+                else:
+                    pdf_context = pdf_text[:3000]
+                    
                 # Local models have smaller context windows (e.g. 2048), so we take a smaller snippet
                 final_prompt = (
-                    f"You are evaluating a PDF. Context:\n\"\"\"\n{pdf_text[:3000]}\n\"\"\"\n\n"
+                    f"You are evaluating a PDF. Context:\n\"\"\"\n{pdf_context}\n\"\"\"\n\n"
                     f"Question: {user_input}\nAnswer:"
                 )
+                
+            # Inject web context if web search is enabled
+            if web_context:
+                final_prompt = f"{web_context}\n\nUse the web search results to answer: {final_prompt}"
                 
             temp = st.session_state.get("chat_local_temp", st.session_state["local_temp"])
             max_t = st.session_state.get("chat_local_max", st.session_state["local_max_tokens"])
@@ -352,6 +491,12 @@ if user_input := st.chat_input("Ask a question..."):
                         full_res += chunk
                         response_placeholder.markdown(full_res + "▌")
                 response_placeholder.markdown(full_res)
+                
+                # Gather resources used during generation
+                res_metrics = tracker.get_metrics()
+                stats["cpu_percent"] = res_metrics["cpu_peak_percent"]
+                stats["ram_percent"] = res_metrics["ram_peak_percent"]
+                
                 memory.add_message("assistant", full_res, stats)
                 st.rerun()
             except Exception as e:

@@ -16,18 +16,26 @@ PRICING = {
     "gemini-1.5-flash-8b": {"input": 0.0375, "output": 0.15},
 }
 
+DEFAULT_API_KEY = ""
+try:
+    import streamlit as st
+    if "GEMINI_API_KEY" in st.secrets:
+        DEFAULT_API_KEY = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    pass
+
 def is_api_key_configured(api_key: str = None) -> bool:
     """
     Checks if a Gemini API key is configured.
     """
-    key = api_key or os.environ.get("GEMINI_API_KEY")
+    key = api_key or os.environ.get("GEMINI_API_KEY") or DEFAULT_API_KEY
     return bool(key)
 
 def init_gemini(api_key: str = None):
     """
     Initializes the Gemini API client.
     """
-    key = api_key or os.environ.get("GEMINI_API_KEY")
+    key = api_key or os.environ.get("GEMINI_API_KEY") or DEFAULT_API_KEY
     if not key:
         raise ValueError("Gemini API Key is not set. Please provide it in settings/sidebar.")
     genai.configure(api_key=key)

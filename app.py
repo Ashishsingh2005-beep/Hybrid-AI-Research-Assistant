@@ -103,7 +103,7 @@ with col1:
     st.header("🚀 Quick Navigation")
     st.write("Explore the different features of the assistant:")
     
-    col_nav1, col_nav2, col_nav3 = st.columns(3)
+    col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
     with col_nav1:
         st.subheader("💬 Chat Assistant")
         st.write("Ask questions, upload research papers, and chat offline with the model.")
@@ -113,6 +113,10 @@ with col1:
         st.write("Compare the Local SLM and Cloud LLM responses side-by-side.")
         st.markdown("[Go to Compare ➔](/compare)", unsafe_allow_html=True)
     with col_nav3:
+        st.subheader("📊 ROI Dashboard")
+        st.write("Monitor token usage, resource utilization, and cost savings.")
+        st.markdown("[Go to Dashboard ➔](/dashboard)", unsafe_allow_html=True)
+    with col_nav4:
         st.subheader("⚙️ Settings")
         st.write("Configure model parameters, download files, and manage your API keys.")
         st.markdown("[Go to Settings ➔](/settings)", unsafe_allow_html=True)
