@@ -67,7 +67,7 @@ def count_tokens_locally(text: str) -> int:
 def generate_llm_response(
     prompt: str,
     system_prompt: str = None,
-    model_name: str = "gemini-2.5-flash",
+    model_name: str = "gemini-1.5-flash",
     temperature: float = 0.7,
     max_tokens: int = 1000,
     api_key: str = None,

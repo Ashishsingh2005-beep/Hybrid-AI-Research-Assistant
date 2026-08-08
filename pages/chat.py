@@ -58,7 +58,7 @@ st.markdown("""
 if "slm_model" not in st.session_state:
     st.session_state["slm_model"] = list(SLM_MODELS.keys())[0]
 if "llm_model" not in st.session_state:
-    st.session_state["llm_model"] = "gemini-2.5-flash"
+    st.session_state["llm_model"] = "gemini-1.5-flash"
 if "local_temp" not in st.session_state:
     st.session_state["local_temp"] = 0.7
 if "local_max_tokens" not in st.session_state:
@@ -159,9 +159,9 @@ with st.sidebar:
         st.session_state["slm_model"] = selected_slm
         
     if model_mode in ["Cloud LLM Only", "Intelligent Auto"]:
-        llm_options = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+        llm_options = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b", "gemini-flash-latest", "gemini-pro-latest"]
         if st.session_state["llm_model"] not in llm_options:
-            st.session_state["llm_model"] = "gemini-2.5-flash"
+            st.session_state["llm_model"] = "gemini-1.5-flash"
         selected_llm = st.selectbox(
             "Active Cloud LLM",
             options=llm_options,

@@ -11,8 +11,10 @@ env/
 # Large binaries and local models (Crucial to prevent GitHub file size errors)
 local_models/
 llama_bin/
+chat_sessions/
+pdf_text.txt
 
 # Environment configurations and API keys
 .env
-.streamlit/
+.streamlit/secrets.toml
 secrets.toml

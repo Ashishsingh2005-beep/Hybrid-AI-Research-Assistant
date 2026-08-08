@@ -261,10 +261,37 @@ def generate_local_slm_response(
     start_time = time.time()
     
     if not os.path.exists(model_path):
-        logger.warning(f"Model file not found at {model_path}. Falling back to Simulated Mode.")
+        logger.warning(f"Model file not found at {model_path}. Checking for Cloud LLM fallback...")
+        try:
+            from models.llm import is_api_key_configured, generate_llm_response
+            if is_api_key_configured():
+                # On cloud hosts like Render where GGUF files aren't pre-downloaded, seamlessly fallback to Cloud LLM
+                clean_p = prompt
+                if "Query: " in prompt:
+                    try:
+                        clean_p = prompt.split("Query: ")[-1].split("Assistant:")[0].strip()
+                    except Exception:
+                        pass
+                
+                llm_res = generate_llm_response(prompt=clean_p, stream=stream)
+                if stream:
+                    def stream_with_badge():
+                        yield f"*(⚡ Local SLM `{model_name.split(' ')[0]}` GGUF not on cloud server — using Cloud Gemini API fallback)*\n\n"
+                        for chunk in llm_res["stream"]:
+                            yield chunk
+                    return {"stream": stream_with_badge()}
+                else:
+                    return {
+                        "text": f"*(⚡ Local SLM `{model_name.split(' ')[0]}` GGUF not on cloud server — using Cloud Gemini API fallback)*\n\n" + llm_res["text"],
+                        "stats": llm_res["stats"]
+                    }
+        except Exception as fallback_err:
+            logger.warning(f"Cloud fallback failed: {fallback_err}")
+
+        # Fall back to Simulated Offline Mode if API key is also missing
         if stream:
             def simulated_stream():
-                response_text = f"*(Note: Local model file not found on disk. Running in Simulated Offline Mode. Go to settings to download it)*\n\n" + get_simulated_response(prompt, model_name)
+                response_text = f"*(Note: Local model file not found on disk. Running in Simulated Offline Mode. Go to Settings to download model or configure API key)*\n\n" + get_simulated_response(prompt, model_name)
                 words = response_text.split(" ")
                 full_response = ""
                 for word in words:
@@ -282,7 +309,7 @@ def generate_local_slm_response(
                 yield stats
             return {"stream": simulated_stream()}
         else:
-            text = f"*(Note: Local model file not found on disk. Running in Simulated Offline Mode. Go to settings to download it)*\n\n" + get_simulated_response(prompt, model_name)
+            text = f"*(Note: Local model file not found on disk. Running in Simulated Offline Mode. Go to Settings to download model or configure API key)*\n\n" + get_simulated_response(prompt, model_name)
             elapsed = time.time() - start_time
             stats = {
                 "model": f"{model_name.split(' ')[0]} (Simulated)",
@@ -484,9 +511,8 @@ def generate_local_slm_response(
 
 def get_simulated_response(prompt: str, model_name: str) -> str:
     """
-    Provides mock answers offline for common concepts to demonstrate SLM capabilities.
+    Provides rich mock answers offline for common concepts to demonstrate SLM capabilities.
     """
-    # Clean system prompt wrapping if present
     clean_prompt = prompt
     if "Query: " in prompt:
         try:
@@ -496,11 +522,42 @@ def get_simulated_response(prompt: str, model_name: str) -> str:
             
     p_lower = clean_prompt.lower()
     
-    if "what is python" in p_lower:
+    if "ai agent" in p_lower or "agent" in p_lower:
+        return (
+            "### 🤖 What are AI Agents?\n\n"
+            "An **AI Agent** is an autonomous system powered by AI models (such as LLMs or SLMs) "
+            "that can perceive its environment, reason about tasks, make decisions, and execute actions using tools to accomplish specific goals.\n\n"
+            "**Key Capabilities of AI Agents:**\n"
+            "- 🧠 **Reasoning & Planning:** Breaks complex goals into step-by-step sub-tasks.\n"
+            "- 🛠️ **Tool Usage:** Calls external web search, code interpreters, APIs, and databases.\n"
+            "- 💾 **Memory Management:** Utilizes short-term context and long-term vector storage (RAG).\n"
+            "- 🔄 **Autonomous Loop:** Continuously acts, evaluates outcome, and adjusts strategy."
+        )
+    elif "what is python" in p_lower or "python" in p_lower:
         return (
             "Python is a high-level, interpreted programming language known for its simplicity and readability. "
             "It supports multiple programming paradigms, including structured, object-oriented, and functional programming. "
             "It is widely used in data science, artificial intelligence, web development, and automation."
+        )
+    elif "machine learning" in p_lower or " ml " in p_lower or p_lower.startswith("ml"):
+        return (
+            "Machine Learning (ML) is a branch of artificial intelligence focused on building systems "
+            "that learn from data, discover hidden patterns, and make predictions or decisions without being explicitly programmed."
+        )
+    elif "rag" in p_lower or "retrieval" in p_lower:
+        return (
+            "Retrieval-Augmented Generation (RAG) is an architecture that grounds language models on custom data. "
+            "It retrieves relevant text snippets from documents or vector databases and injects them into the prompt before generating answers."
+        )
+    elif "slm" in p_lower or "small language" in p_lower:
+        return (
+            "Small Language Models (SLMs) are lightweight AI models (typically under 7 billion parameters, like SmolLM2 or Phi-3) "
+            "optimized to run locally on edge devices and CPUs with low latency, zero API cost, and total privacy."
+        )
+    elif "llm" in p_lower or "large language" in p_lower:
+        return (
+            "Large Language Models (LLMs) are massive AI models (e.g. Gemini, GPT-4) trained on massive internet datasets. "
+            "They excel at deep reasoning, broad world knowledge, and processing large context windows."
         )
     elif "summarize" in p_lower:
         return (
@@ -524,12 +581,11 @@ def get_simulated_response(prompt: str, model_name: str) -> str:
     elif "capital of india" in p_lower or "delhi" in p_lower:
         return "The capital of India is New Delhi. It serves as the seat of all three branches of the Government of India."
     elif p_lower in ["hi", "hello", "hey", "hola"]:
-        return "Hello! How can I help you today? You can ask me about Python, code optimization, or download the model in Settings for full offline intelligence."
+        return "Hello! How can I help you today? You can ask me about AI agents, Python, RAG, or configure your Gemini API key in Settings for live cloud AI capabilities!"
     else:
         return (
-            f"Hello! I am {model_name.split(' ')[0]} running offline locally.\n\n"
-            f"You asked: '{clean_prompt}'.\n\n"
-            f"Since I am running in **Simulated Offline Mode** (GGUF model file not downloaded yet), "
-            f"I only reply with static mocks for specific queries.\n\n"
-            f"👉 **To get real, dynamic AI responses**: Please go to the **Settings** page and click the **Download** button next to your chosen local model (e.g. SmolLM2-135M) to download and run it directly on your machine!"
+            f"### Response to: '{clean_prompt}'\n\n"
+            f"An AI model processes your request by analyzing syntax, extracting intent, "
+            f"and generating structured natural language text based on its learned representations.\n\n"
+            f"💡 *Tip: For live, real-time AI responses to any custom question, enter your Gemini API key on the **Settings** page!*"
         )

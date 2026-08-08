@@ -6,6 +6,18 @@ st.set_page_config(page_title="Home - Hybrid AI Assistant", layout="wide")
 # Custom CSS for gorgeous design
 st.markdown("""
 <style>
+    .reportview-container, .main {
+        background: #0f1115;
+        color: #e5e9f0;
+    }
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #1b1e24;
+        border: 1px solid #2e3440 !important;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
     .hero-title {
         font-size: 48px;
         font-weight: 800;
@@ -18,14 +30,6 @@ st.markdown("""
         font-size: 20px;
         color: #d8dee9;
         margin-bottom: 30px;
-    }
-    .arch-card {
-        background-color: #1b1e24;
-        border: 1px solid #2e3440;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
     .pill {
         background-color: #3b4252;
@@ -70,12 +74,12 @@ st.markdown("---")
 col1, col2 = st.columns([3, 2])
 
 with col1:
-    st.markdown('<div class="arch-card">', unsafe_allow_html=True)
-    st.header("📐 Architecture Overview")
-    st.write("This application demonstrates a **hybrid AI design pattern**. It intelligently routes queries to the most cost-effective and capable engine:")
-    
-    # Textual diagram representation
-    st.code("""
+    with st.container(border=True):
+        st.header("📐 Architecture Overview")
+        st.write("This application demonstrates a **hybrid AI design pattern**. It intelligently routes queries to the most cost-effective and capable engine:")
+        
+        # Textual diagram representation
+        st.code("""
                   ┌──────────────────────┐
                   │       User Query     │
                   └──────────┬───────────┘
@@ -96,58 +100,57 @@ with col1:
                   ┌──────────────────────┐
                   │    Final Response    │
                   └──────────────────────┘
-    """, language="text")
-    st.markdown('</div>', unsafe_allow_html=True)
+        """, language="text")
     
-    st.markdown('<div class="arch-card">', unsafe_allow_html=True)
-    st.header("🚀 Quick Navigation")
-    st.write("Explore the different features of the assistant:")
-    
-    col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
-    with col_nav1:
-        st.subheader("💬 Chat Assistant")
-        st.write("Ask questions, upload research papers, and chat offline with the model.")
-        st.markdown("[Go to Chat ➔](/chat)", unsafe_allow_html=True)
-    with col_nav2:
-        st.subheader("⚖️ Compare Answers")
-        st.write("Compare the Local SLM and Cloud LLM responses side-by-side.")
-        st.markdown("[Go to Compare ➔](/compare)", unsafe_allow_html=True)
-    with col_nav3:
-        st.subheader("📊 ROI Dashboard")
-        st.write("Monitor token usage, resource utilization, and cost savings.")
-        st.markdown("[Go to Dashboard ➔](/dashboard)", unsafe_allow_html=True)
-    with col_nav4:
-        st.subheader("⚙️ Settings")
-        st.write("Configure model parameters, download files, and manage your API keys.")
-        st.markdown("[Go to Settings ➔](/settings)", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("")
+    with st.container(border=True):
+        st.header("🚀 Quick Navigation")
+        st.write("Explore the different features of the assistant:")
+        
+        col_nav1, col_nav2, col_nav3, col_nav4 = st.columns(4)
+        with col_nav1:
+            st.subheader("💬 Chat Assistant")
+            st.write("Ask questions, upload research papers, and chat offline with the model.")
+            st.markdown("[Go to Chat ➔](/chat)", unsafe_allow_html=True)
+        with col_nav2:
+            st.subheader("⚖️ Compare Answers")
+            st.write("Compare the Local SLM and Cloud LLM responses side-by-side.")
+            st.markdown("[Go to Compare ➔](/compare)", unsafe_allow_html=True)
+        with col_nav3:
+            st.subheader("📊 ROI Dashboard")
+            st.write("Monitor token usage, resource utilization, and cost savings.")
+            st.markdown("[Go to Dashboard ➔](/dashboard)", unsafe_allow_html=True)
+        with col_nav4:
+            st.subheader("⚙️ Settings")
+            st.write("Configure model parameters, download files, and manage your API keys.")
+            st.markdown("[Go to Settings ➔](/settings)", unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div class="arch-card">', unsafe_allow_html=True)
-    st.subheader("💻 Local SLM (Offline Edge)")
-    st.write("Runs entirely on your local machine using quantized GGUF models. Ideal for:")
-    st.markdown('<span class="pill">Simple Questions</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Grammar Check</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Code Autocomplete</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Offline Work</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Zero Token Cost</span>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.subheader("💻 Local SLM (Offline Edge)")
+        st.write("Runs entirely on your local machine using quantized GGUF models. Ideal for:")
+        st.markdown('<span class="pill">Simple Questions</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Grammar Check</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Code Autocomplete</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Offline Work</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Zero Token Cost</span>', unsafe_allow_html=True)
 
-    st.markdown('<div class="arch-card">', unsafe_allow_html=True)
-    st.subheader("☁️ Cloud LLM (Gemini API)")
-    st.write("Runs on Google Cloud infra. Ideal for:")
-    st.markdown('<span class="pill">Deep Analysis</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Large Context PDFs</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Complex Reasoning</span>', unsafe_allow_html=True)
-    st.markdown('<span class="pill">Multi-document Comparison</span>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("")
+    with st.container(border=True):
+        st.subheader("☁️ Cloud LLM (Gemini API)")
+        st.write("Runs on Google Cloud infra. Ideal for:")
+        st.markdown('<span class="pill">Deep Analysis</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Large Context PDFs</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Complex Reasoning</span>', unsafe_allow_html=True)
+        st.markdown('<span class="pill">Multi-document Comparison</span>', unsafe_allow_html=True)
 
-    st.markdown('<div class="arch-card">', unsafe_allow_html=True)
-    st.subheader("🧠 Router (Auto Mode)")
-    st.write("Intelligent routing logic determines the correct model using criteria such as:")
-    st.write("- **Query word count:** routes short queries to SLM.")
-    st.write("- **PDF Upload:** routes research paper queries to LLM.")
-    st.write("- **Internet necessity:** routes searches to LLM.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("")
+    with st.container(border=True):
+        st.subheader("🧠 Router (Auto Mode)")
+        st.write("Intelligent routing logic determines the correct model using criteria such as:")
+        st.write("- **Query word count:** routes short queries to SLM.")
+        st.write("- **PDF Upload:** routes research paper queries to LLM.")
+        st.write("- **Internet necessity:** routes searches to LLM.")
 
 st.info("💡 **Getting Started:** Visit the **Settings** page in the sidebar to download a local model (like SmolLM2-135M) or enter your Gemini API key, then start chatting!")
+

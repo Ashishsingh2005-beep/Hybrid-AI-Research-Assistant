@@ -62,16 +62,17 @@ query = st.text_area("Enter your test prompt/question here:", value="What is Pyt
 
 col_ctrl1, col_ctrl2 = st.columns(2)
 with col_ctrl1:
-    slm_choice = st.selectbox("Local SLM to compare", options=list(SLM_MODELS.keys()), index=list(SLM_MODELS.keys()).index(st.session_state["slm_model"]))
+    slm_choice = st.selectbox("Local SLM to compare", options=list(SLM_MODELS.keys()), index=list(SLM_MODELS.keys()).index(st.session_state["slm_model"]) if st.session_state["slm_model"] in SLM_MODELS else 0)
 with col_ctrl2:
-    llm_options = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-pro-latest"]
+    llm_options = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b", "gemini-flash-latest", "gemini-pro-latest"]
     if st.session_state["llm_model"] not in llm_options:
-        st.session_state["llm_model"] = "gemini-2.5-flash"
+        st.session_state["llm_model"] = "gemini-1.5-flash"
     llm_choice = st.selectbox(
         "Cloud LLM to compare", 
         options=llm_options, 
         index=llm_options.index(st.session_state["llm_model"])
     )
+
 
 compare_button = st.button("⚖️ Generate & Compare Answers", type="primary", use_container_width=True)
 
