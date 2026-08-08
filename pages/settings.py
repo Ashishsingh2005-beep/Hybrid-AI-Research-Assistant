@@ -194,39 +194,45 @@ with st.container(border=True):
     diag_col1, diag_col2, diag_col3 = st.columns(3)
 
     has_lib = check_llama_cpp_library()
-    has_bin = os.path.exists(os.path.join(get_llama_bin_dir(), "llama-server.exe"))
+    is_windows = (os.name == 'nt')
+    has_bin = os.path.exists(os.path.join(get_llama_bin_dir(), "llama-server.exe" if is_windows else "llama-server"))
 
     with diag_col1:
         st.subheader("Software Libraries")
         if has_lib:
-            st.markdown('`llama-cpp-python` installation: <span class="status-badge status-ok">ACTIVE</span>', unsafe_allow_html=True)
+            st.markdown('`llama-cpp-python` library: <span class="status-badge status-ok">ACTIVE</span>', unsafe_allow_html=True)
         else:
-            st.markdown('`llama-cpp-python` installation: <span class="status-badge status-warning">NOT INSTALLED</span>', unsafe_allow_html=True)
-        st.write("Using python library allows loading models directly in streamlit python process memory.")
+            st.markdown('`llama-cpp-python` library: <span class="status-badge status-warning">NOT INSTALLED</span>', unsafe_allow_html=True)
+        st.write("Loads GGUF models directly in Python process memory when compiled binaries are active.")
 
     with diag_col2:
-        st.subheader("llama.cpp Windows Binary")
-        if has_bin:
-            st.markdown('`llama-server.exe` binary: <span class="status-badge status-ok">AVAILABLE</span>', unsafe_allow_html=True)
+        if is_windows:
+            st.subheader("llama.cpp Windows Binary")
+            if has_bin:
+                st.markdown('`llama-server.exe` binary: <span class="status-badge status-ok">AVAILABLE</span>', unsafe_allow_html=True)
+            else:
+                st.markdown('`llama-server.exe` binary: <span class="status-badge status-warning">MISSING</span>', unsafe_allow_html=True)
+                
+            if not has_lib and not has_bin:
+                st.write("Download precompiled Windows binaries for background local inference below.")
+                if st.button("📥 Download llama.cpp Binaries", use_container_width=True):
+                    p_bar = st.progress(0.0)
+                    s_txt = st.empty()
+                    if download_llama_binaries(p_bar, s_txt):
+                        st.success("llama.cpp binaries downloaded!")
+                        st.rerun()
+            else:
+                if st.button("🔄 Restart Local Llama Server", use_container_width=True):
+                    terminate_existing_llama_server()
+                    st.success("Local llama-server instances reset.")
         else:
-            st.markdown('`llama-server.exe` binary: <span class="status-badge status-warning">MISSING</span>', unsafe_allow_html=True)
-            
-        if not has_lib and not has_bin:
-            st.write("Since the `llama-cpp-python` library is not compiled yet, you can download precompiled Windows binaries below.")
-            if st.button("📥 Download llama.cpp Binaries", use_container_width=True):
-                p_bar = st.progress(0.0)
-                s_txt = st.empty()
-                if download_llama_binaries(p_bar, s_txt):
-                    st.success("llama.cpp binaries downloaded!")
-                    st.rerun()
-        else:
-            if st.button("🔄 Restart Local Llama Server", use_container_width=True):
-                terminate_existing_llama_server()
-                st.success("Local llama-server instances reset.")
+            st.subheader("Cloud / Linux Engine")
+            st.markdown('Host OS: <span class="status-badge status-ok">LINUX CONTAINER</span>', unsafe_allow_html=True)
+            st.write("Running on Linux cloud host (Render). Queries automatically use **Cloud LLM Fallback** or **Simulated Mode** for instant responses.")
 
     with diag_col3:
-        st.subheader("Offline/Simulated Mode")
-        st.write("If you don't download local binaries or models, the system will run in **Simulated Local Mode**.")
-        st.write("This allows testing the app layout and features without waiting for downloads!")
+        st.subheader("Offline & Fallback Mode")
+        st.write("When local model files aren't downloaded, the system runs in **Simulated Mode** or **Cloud LLM Fallback**.")
+        st.write("This ensures full functionality across both local desktop and cloud deployments!")
         st.write(f"**Model Folder:** `{get_models_dir()}`")
 

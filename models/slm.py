@@ -111,32 +111,30 @@ def download_llama_binaries(progress_bar=None, status_text=None) -> bool:
     if status_text:
         status_text.text("Fetching latest llama.cpp releases from GitHub...")
         
+    download_url = None
     try:
-        # Get latest release from GitHub API
         url = "https://api.github.com/repos/ggml-org/llama.cpp/releases/latest"
         headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers)
-        r.raise_for_status()
-        data = r.json()
-        
-        # Find asset matching win-avx2-x64.zip
-        download_url = None
-        for asset in data.get("assets", []):
-            name = asset.get("name", "")
-            if "bin-win-avx2-x64.zip" in name or ("bin-win" in name and "avx2-x64.zip" in name):
-                download_url = asset.get("browser_download_url")
-                break
-                
-        if not download_url:
-            # Fallback search
+        r = requests.get(url, headers=headers, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
             for asset in data.get("assets", []):
                 name = asset.get("name", "")
-                if "win" in name and name.endswith(".zip"):
+                if "bin-win-avx2-x64.zip" in name or ("bin-win" in name and "avx2-x64.zip" in name):
                     download_url = asset.get("browser_download_url")
                     break
-                    
-        if not download_url:
-            raise ValueError("No suitable Windows llama.cpp binary asset found.")
+            if not download_url:
+                for asset in data.get("assets", []):
+                    name = asset.get("name", "")
+                    if "win" in name and name.endswith(".zip"):
+                        download_url = asset.get("browser_download_url")
+                        break
+    except Exception as fetch_err:
+        logger.warning(f"GitHub API fetch failed (rate limit or network): {fetch_err}")
+
+    if not download_url:
+        # Direct fallback link to official llama.cpp release asset
+        download_url = "https://github.com/ggml-org/llama.cpp/releases/download/b3600/llama-b3600-bin-win-avx2-x64.zip"
             
         if status_text:
             status_text.text(f"Downloading llama.cpp from {download_url}...")
