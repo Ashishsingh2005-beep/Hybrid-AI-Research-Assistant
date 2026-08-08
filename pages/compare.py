@@ -64,9 +64,10 @@ col_ctrl1, col_ctrl2 = st.columns(2)
 with col_ctrl1:
     slm_choice = st.selectbox("Local SLM to compare", options=list(SLM_MODELS.keys()), index=list(SLM_MODELS.keys()).index(st.session_state["slm_model"]) if st.session_state["slm_model"] in SLM_MODELS else 0)
 with col_ctrl2:
-    llm_options = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b", "gemini-flash-latest", "gemini-pro-latest"]
+    avail = get_available_models(st.session_state.get("gemini_api_key"))
+    llm_options = avail if avail else ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"]
     if st.session_state["llm_model"] not in llm_options:
-        st.session_state["llm_model"] = "gemini-1.5-flash"
+        st.session_state["llm_model"] = llm_options[0]
     llm_choice = st.selectbox(
         "Cloud LLM to compare", 
         options=llm_options, 

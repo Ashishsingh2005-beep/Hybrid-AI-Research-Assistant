@@ -159,9 +159,10 @@ with st.sidebar:
         st.session_state["slm_model"] = selected_slm
         
     if model_mode in ["Cloud LLM Only", "Intelligent Auto"]:
-        llm_options = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash-8b", "gemini-flash-latest", "gemini-pro-latest"]
+        avail = get_available_models(st.session_state.get("gemini_api_key"))
+        llm_options = avail if avail else ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"]
         if st.session_state["llm_model"] not in llm_options:
-            st.session_state["llm_model"] = "gemini-1.5-flash"
+            st.session_state["llm_model"] = llm_options[0]
         selected_llm = st.selectbox(
             "Active Cloud LLM",
             options=llm_options,

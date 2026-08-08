@@ -6,13 +6,20 @@ from google.generativeai.types import GenerationConfig
 
 logger = logging.getLogger(__name__)
 
-# Pricing per million tokens (as of standard Gemini 1.5 pricing)
+# Pricing per million tokens
 PRICING = {
     "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
     "gemini-1.5-flash-latest": {"input": 0.075, "output": 0.30},
     "gemini-1.5-pro": {"input": 1.25, "output": 5.00},
     "gemini-1.5-pro-latest": {"input": 1.25, "output": 5.00},
     "gemini-2.5-flash": {"input": 0.075, "output": 0.30},
+    "gemini-2.5-pro": {"input": 1.25, "output": 5.00},
+    "gemini-2.0-flash": {"input": 0.075, "output": 0.30},
+    "gemini-2.0-flash-001": {"input": 0.075, "output": 0.30},
+    "gemini-2.0-flash-lite": {"input": 0.0375, "output": 0.15},
+    "gemini-2.0-flash-lite-001": {"input": 0.0375, "output": 0.15},
+    "gemini-flash-latest": {"input": 0.075, "output": 0.30},
+    "gemini-pro-latest": {"input": 1.25, "output": 5.00},
     "gemini-1.5-flash-8b": {"input": 0.0375, "output": 0.15},
 }
 
@@ -58,6 +65,35 @@ def get_available_models(api_key: str = None) -> list[str]:
         logger.error(f"Failed to list models: {e}")
         return []
 
+def get_supported_model(requested_model: str, api_key: str = None) -> str:
+    """
+    Checks if requested_model is available for the given API Key.
+    If not, automatically falls back to an available model for the user's key.
+    """
+    available = get_available_models(api_key)
+    if not available:
+        return requested_model
+        
+    if requested_model in available:
+        return requested_model
+        
+    fallback_priority = [
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+        "gemini-flash-latest",
+        "gemini-1.5-flash",
+        "gemini-2.5-pro",
+        "gemini-pro-latest",
+        "gemini-1.5-pro"
+    ]
+    
+    for fb in fallback_priority:
+        if fb in available:
+            logger.info(f"Model '{requested_model}' not found for key. Auto-falling back to '{fb}'.")
+            return fb
+            
+    return available[0]
+
 def count_tokens_locally(text: str) -> int:
     """
     Rough fallback token estimator (approx 4 chars per token).
@@ -67,17 +103,17 @@ def count_tokens_locally(text: str) -> int:
 def generate_llm_response(
     prompt: str,
     system_prompt: str = None,
-    model_name: str = "gemini-1.5-flash",
+    model_name: str = "gemini-2.5-flash",
     temperature: float = 0.7,
     max_tokens: int = 1000,
     api_key: str = None,
     stream: bool = True
 ):
     """
-    Generates a response using the Cloud Gemini API.
-    Returns a dictionary with response text/stream and metadata (token count, cost, response time).
+    Generates a response using the Cloud Gemini API with automatic fallback.
     """
     init_gemini(api_key)
+    model_name = get_supported_model(model_name, api_key)
     
     # Configure generation parameters
     gen_config = GenerationConfig(
