@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from models.slm import generate_local_slm_response, is_model_downloaded, SLM_MODELS
-from models.llm import generate_llm_response, is_api_key_configured
+from models.llm import generate_llm_response, is_api_key_configured, get_available_models
 from utils.prompt import get_comparison_prompt, get_system_prompt
 from utils.search import search_web
 from utils.system_monitor import ResourceTracker, get_system_resources

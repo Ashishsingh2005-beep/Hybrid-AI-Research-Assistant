@@ -5,7 +5,7 @@ from utils.memory import ConversationMemory
 from utils.prompt import get_system_prompt, get_summarization_prompt
 from pdf.extractor import extract_text_from_pdf, get_pdf_metadata
 from models.slm import generate_local_slm_response, is_model_downloaded, SLM_MODELS
-from models.llm import generate_llm_response, is_api_key_configured
+from models.llm import generate_llm_response, is_api_key_configured, get_available_models
 from utils.rag import chunk_text, SimpleRetriever
 from utils.search import search_web
 from utils.system_monitor import ResourceTracker, get_system_resources
